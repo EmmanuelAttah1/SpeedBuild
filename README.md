@@ -4,7 +4,7 @@ SpeedBuild is an AI-powered development tool that helps developers clone and cus
 ## How it works
 
 1. Create templates from existing features
-2. Store and share templates via GitHub
+2. Store and share templates
 3. Use our AI agent to implement and customize templates in new projects
 
 ## Perfect for teams looking to:
