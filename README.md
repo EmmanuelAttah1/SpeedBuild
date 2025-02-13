@@ -9,10 +9,11 @@ SpeedBuild is an AI-powered development tool that helps developers clone and cus
 
 ## Perfect for teams looking to:
 
-Standardize feature implementations
-Reduce repetitive coding
-Maintain consistency across projects
-Speed up development of common features
+1. Standardize feature implementations
+2. Reduce repetitive coding
+3. Maintain consistency across projects
+4. Speed up development of common features
 
 ## Current Status
 🚧 In Development
+
