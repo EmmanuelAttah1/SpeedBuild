@@ -1,0 +1,5 @@
+feature: ManageRecipes
+feature_file_path: kitchen/views.py
+dependencies:
+  - django==5.0
+  - django_rest_framework==3.0.1

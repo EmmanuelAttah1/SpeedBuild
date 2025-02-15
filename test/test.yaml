@@ -1,0 +1,9 @@
+name: John Doe
+age: 30
+languages:
+  - Python
+  - JavaScript
+  - C++
+settings:
+  theme: dark
+  notifications: true
