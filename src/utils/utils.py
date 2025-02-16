@@ -3,6 +3,14 @@ import os
 import ast
 import shutil
 
+def removeDuplicates(code):
+    cleaned_code = []
+    for line in code:
+        if line not in cleaned_code:
+            cleaned_code.append(line)
+
+    return cleaned_code
+
 
 def clear_folder(folder_path):
     for file_name in os.listdir(folder_path):

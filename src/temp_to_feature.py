@@ -1,22 +1,56 @@
-import os, zipfile
-from .utils.utils import getIndividualImports
+import os, zipfile, sys
+from .utils.utils import getIndividualImports,removeDuplicates
 from .utils.split import split_code_into_sections
+
+from .agent.sb_agent import agent
 
 processing_order = ["models.py","views.py","urls.py"]
 
-def removeDuplicates(code):
-    cleaned_code = []
-    for line in code:
-        if line not in cleaned_code:
-            cleaned_code.append(line)
+def getTemplateFileNames(path):
+    file_paths = []
+    for root, _, files in os.walk(path):
+        for file in files:
+            # Get the relative path to the base directory
+            relative_path = os.path.relpath(os.path.join(root, file), path)
+            file_paths.append(relative_path)
+    return file_paths
 
-    return cleaned_code
 
-
-def writeToFile(filePath,content):
+def writeToFile(filePath,content,fileName):
     print("Saving to file ")
-    with open(filePath,"w") as file:
-        file.write(content)
+    dest = f"{filePath}/{fileName}"
+    if os.path.exists(dest):
+        # append to file
+        with open(dest, "r+") as file:
+            data = file.read()  # Step 1: Read existing content
+        
+            file.seek(0)        # Move to the beginning of the file
+            file.truncate(0)    # Step 2: Clear the file
+
+            write_data = f"{imports}\n{content}\n{data}"
+            chunks = split_code_into_sections(write_data)
+            code = []
+            imports = []
+            
+            for chunk in chunks:
+                if "import " in chunk:
+                    individualImports = getIndividualImports(chunk)
+                    imports.extend(individualImports)
+                else:
+                    code.append(chunk)
+
+            if imports:  # Step 3: Write new content
+                imports = removeDuplicates(imports)
+                imports = "\n".join(imports)
+                file.write(imports + "\n")
+
+            file.write("\n\n")
+            code = removeDuplicates(code)
+            code = "\n".join(code)
+            file.write(code)  # Append old content to new content
+    else:
+        with open(filePath,"w") as file:
+            file.write(content)
 
 def getAppFileContent(appName,fileName,project_path):
     imports = []
@@ -66,9 +100,9 @@ def processFile(fileName,appName,project_path):
 
     fileToUpdate = fileName.split("/")[-1]
     fileContent = importAsString + "\n\n" + codeAsString
-    filePath = f"{project_path}/{appName}/{fileToUpdate}"
+    filePath = f"{project_path}/{appName}/"
 
-    writeToFile(filePath,fileContent)
+    writeToFile(filePath,fileContent,fileToUpdate)
 
 def getFeatureFromTemplate(template_path,project_root,template_name):
     """
@@ -114,17 +148,23 @@ def getFeatureFromTemplate(template_path,project_root,template_name):
                 break
             else:
                 print("Enter a valid response")
+                continue
 
         if proceed_with_customization:
             prompt = input("Enter Customization prompt (be as detailed as possible) : \n")
+            # prompt = sys.stdin.read()
 
             # make agent call here
-        
-        path_to_template = f"{project_root}/.sb/{template_name}/kitchen"
-        for file in os.listdir(path_to_template):
-            file_path = f"{path_to_template}/{file}"
-            print(file_path)
-            processFile(file_path,app_name,project_root)
+            # pass prompt and a list of all files in template
+            files = getTemplateFileNames(template_unpack_path)
+            print(files, " template files")
+            res = agent(files,prompt,app_path,feature_name)
+        else:
+            path_to_template = f"{project_root}/.sb/{template_name}/kitchen"
+            for file in os.listdir(path_to_template):
+                file_path = f"{path_to_template}/{file}"
+                print(file_path)
+                processFile(file_path,app_name,project_root)
     else:
         print(f"No app with name {app_name} in {project_root}")
     
